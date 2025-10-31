@@ -2,7 +2,7 @@
 
 A friendly, open-source toolkit for simple Prakriti (Ayurvedic constitution) analysis and basic Ayurvedic guidance.
 
-![PrakritiInsight](frontend/img/desktop.png)
+![PrakritiInsight]
 
 Hello — this README was written to help you get PrakritiInsight running quickly. I tried to keep instructions short and practical so you can clone, install, and launch the app on Windows without hunting for missing steps.
 
