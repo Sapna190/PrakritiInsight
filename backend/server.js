@@ -7,7 +7,6 @@ if (result.error) {
 }
 
 const express = require('express');
-const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
 const authRoutes = require('./routes/auth');
@@ -18,9 +17,6 @@ const app = express();
 
 // Parse JSON bodies FIRST
 app.use(express.json());
-
-// Enable CORS for cross-origin requests (allows frontend served on different port)
-app.use(cors());
 
 console.log('MONGODB_URI:', process.env.MONGODB_URI);
 console.log('JWT_SECRET:', process.env.JWT_SECRET);
@@ -36,9 +32,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/prakriti', prakritiRoutes);
 
-// Static files - serve the frontend folder (HTML/CSS/JS assets)
-// __dirname is repository root; frontend files live in ./frontend
-app.use(express.static(path.join(__dirname, 'frontend')));
+// Static files - serve the frontend folder from project root
+// backend is inside ./backend so go up one level and into frontend
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

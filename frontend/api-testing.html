@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Testing - AyurvediCure</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        h2 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .response {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { border-left: 4px solid #4caf50; }
+        .error { border-left: 4px solid #f44336; }
+        .token-display {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            word-break: break-all;
+            font-size: 12px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 API Testing Dashboard</h1>
+        <p class="subtitle">AyurvediCure Backend API Testing</p>
+
+        <div class="grid">
+            <!-- Register Section -->
+            <div class="section">
+                <h2>1. Register User</h2>
+                <div class="form-group">
+                    <label>Name:</label>
+                    <input type="text" id="reg_name" value="Test User" placeholder="Enter name">
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="reg_email" value="test@test.com" placeholder="Enter email">
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="reg_password" value="test123" placeholder="Enter password">
+                </div>
+                <button onclick="register()">Register</button>
+                <div id="reg_response" class="response" style="display:none;"></div>
+            </div>
+
+            <!-- Login Section -->
+            <div class="section">
+                <h2>2. Login User</h2>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="login_email" value="test@test.com" placeholder="Enter email">
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="login_password" value="test123" placeholder="Enter password">
+                </div>
+                <button onclick="login()">Login</button>
+                <div id="login_response" class="response" style="display:none;"></div>
+                <div id="token_display" class="token-display" style="display:none;">
+                    <strong>Token:</strong> <span id="token_value"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Get Profile Section -->
+        <div class="section">
+            <h2>3. Get Profile (Protected)</h2>
+            <p style="color: #666; margin-bottom: 15px;">Login first to get a token</p>
+            <button onclick="getProfile()">Get Profile</button>
+            <div id="profile_response" class="response" style="display:none;"></div>
+        </div>
+
+        <!-- Update Profile Section -->
+        <div class="section">
+            <h2>4. Update Profile (Protected)</h2>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Name:</label>
+                    <input type="text" id="update_name" placeholder="Enter name">
+                </div>
+                <div class="form-group">
+                    <label>Phone:</label>
+                    <input type="tel" id="update_phone" placeholder="Enter phone">
+                </div>
+                <div class="form-group">
+                    <label>Gender:</label>
+                    <select id="update_gender">
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date of Birth:</label>
+                    <input type="date" id="update_dob">
+                </div>
+                <div class="form-group">
+                    <label>Locality:</label>
+                    <input type="text" id="update_locality" placeholder="Enter locality">
+                </div>
+                <div class="form-group">
+                    <label>PIN Code:</label>
+                    <input type="text" id="update_pin" placeholder="Enter PIN code">
+                </div>
+            </div>
+            <button onclick="updateProfile()">Update Profile</button>
+            <div id="update_response" class="response" style="display:none;"></div>
+        </div>
+
+        <!-- Change Password Section -->
+        <div class="section">
+            <h2>5. Change Password (Protected)</h2>
+            <div class="form-group">
+                <label>Current Password:</label>
+                <input type="password" id="current_password" placeholder="Enter current password">
+            </div>
+            <div class="form-group">
+                <label>New Password:</label>
+                <input type="password" id="new_password" placeholder="Enter new password">
+            </div>
+            <button onclick="changePassword()">Change Password</button>
+            <div id="password_response" class="response" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = localStorage.getItem('authToken') || '';
+
+        function showResponse(elementId, data, isError = false) {
+            const el = document.getElementById(elementId);
+            el.style.display = 'block';
+            el.textContent = JSON.stringify(data, null, 2);
+            el.className = isError ? 'response error' : 'response success';
+        }
+
+        async function register() {
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('reg_name').value,
+                        email: document.getElementById('reg_email').value,
+                        password: document.getElementById('reg_password').value
+                    })
+                });
+                const data = await response.json();
+                showResponse('reg_response', data, !response.ok);
+            } catch (error) {
+                showResponse('reg_response', { error: error.message }, true);
+            }
+        }
+
+        async function login() {
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('login_email').value,
+                        password: document.getElementById('login_password').value
+                    })
+                });
+                const data = await response.json();
+                showResponse('login_response', data, !response.ok);
+                
+                if (response.ok && data.token) {
+                    authToken = data.token;
+                    localStorage.setItem('authToken', authToken);
+                    document.getElementById('token_display').style.display = 'block';
+                    document.getElementById('token_value').textContent = authToken;
+                }
+            } catch (error) {
+                showResponse('login_response', { error: error.message }, true);
+            }
+        }
+
+        async function getProfile() {
+            if (!authToken) {
+                showResponse('profile_response', { error: 'Please login first' }, true);
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showResponse('profile_response', data, !response.ok);
+            } catch (error) {
+                showResponse('profile_response', { error: error.message }, true);
+            }
+        }
+
+        async function updateProfile() {
+            if (!authToken) {
+                showResponse('update_response', { error: 'Please login first' }, true);
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: document.getElementById('update_name').value,
+                        phone: document.getElementById('update_phone').value,
+                        gender: document.getElementById('update_gender').value,
+                        dateOfBirth: document.getElementById('update_dob').value,
+                        locality: document.getElementById('update_locality').value,
+                        pinCode: document.getElementById('update_pin').value
+                    })
+                });
+                const data = await response.json();
+                showResponse('update_response', data, !response.ok);
+            } catch (error) {
+                showResponse('update_response', { error: error.message }, true);
+            }
+        }
+
+        async function changePassword() {
+            if (!authToken) {
+                showResponse('password_response', { error: 'Please login first' }, true);
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/auth/change-password', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        currentPassword: document.getElementById('current_password').value,
+                        newPassword: document.getElementById('new_password').value
+                    })
+                });
+                const data = await response.json();
+                showResponse('password_response', data, !response.ok);
+            } catch (error) {
+                showResponse('password_response', { error: error.message }, true);
+            }
+        }
+
+        // Auto-fill token if available
+        if (authToken) {
+            document.getElementById('token_display').style.display = 'block';
+            document.getElementById('token_value').textContent = authToken;
+        }
+    </script>
+</body>
+</html>

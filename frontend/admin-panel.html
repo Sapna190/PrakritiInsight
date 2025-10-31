@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel - AyurvediCure</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="img/ayruvedi.png">
+  <link rel="stylesheet" href="css/plugins8a54.css?ver=1.0.0">
+  <link rel="stylesheet" href="css/style8a54.css?ver=1.0.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+
+  <style>
+    body {
+      padding: 2rem;
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .admin-container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    h2 {
+      color: #137300;
+      font-weight: bold;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-control:focus {
+      border-color: #137300;
+      box-shadow: 0 0 0 0.2rem rgba(19, 115, 0, 0.25);
+    }
+
+    .btn-primary {
+      background-color: #137300;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: #0f5d00;
+    }
+
+    .table th, .table td {
+      vertical-align: middle !important;
+    }
+
+    .badge-done {
+      background-color: #28a745;
+    }
+
+    .badge-pending {
+      background-color: #ffc107;
+      color: #212529;
+    }
+
+    @media (max-width: 768px) {
+      .admin-container {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="admin-container">
+    <h2>🛠 Admin Panel - Manage Students & Follow-ups</h2>
+
+    <form id="userForm" class="row g-3 mb-4">
+      <div class="col-md-4">
+        <input type="text" class="form-control" placeholder="Student Name" id="name" required>
+      </div>
+      <div class="col-md-4">
+        <select class="form-control" id="prakriti" required>
+          <option value="">Select Prakriti</option>
+          <option value="Vata">Vata</option>
+          <option value="Pitta">Pitta</option>
+          <option value="Kapha">Kapha</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <input type="date" class="form-control" id="followup" required>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Add Student</button>
+      </div>
+    </form>
+
+    <table class="table table-bordered table-hover">
+      <thead class="table-success">
+        <tr>
+          <th>Name</th>
+          <th>Prakriti</th>
+          <th>Follow-up</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="dataTable">
+        <!-- Dynamic content -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const form = document.getElementById('userForm');
+    const table = document.getElementById('dataTable');
+    const token = localStorage.getItem('authToken');
+
+    let users = [];
+
+    // Fetch records from database
+    async function loadRecords() {
+      try {
+        const response = await fetch('/api/prakriti/records', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          users = await response.json();
+          renderTable();
+        } else {
+          console.error('Failed to load records');
+          // Fallback to localStorage if API fails
+          users = JSON.parse(localStorage.getItem('adminUsers')) || [];
+          renderTable();
+        }
+      } catch (error) {
+        console.error('Error loading records:', error);
+        // Fallback to localStorage
+        users = JSON.parse(localStorage.getItem('adminUsers')) || [];
+        renderTable();
+      }
+    }
+
+    function renderTable() {
+      table.innerHTML = '';
+      if (users.length === 0) {
+        table.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No records found. Complete a Prakriti Analysis to see results here.</td></tr>';
+        return;
+      }
+      
+      users.forEach((user, index) => {
+        const followupDate = user.followUpDate || user.followup;
+        const prakriti = user.prakritiType || user.prakriti;
+        const name = user.studentName || user.name;
+        const isDone = user.status === 'Done' || user.done;
+        const recordId = user._id;
+        const notes = user.notes || '';
+
+        const row = `<tr>
+          <td>
+            <strong>${name}</strong>
+            ${notes ? `<br><small class="text-muted">${notes}</small>` : ''}
+          </td>
+          <td><span class="badge bg-info">${prakriti}</span></td>
+          <td>${new Date(followupDate).toLocaleDateString()}</td>
+          <td>
+            <span class="badge ${isDone ? 'badge-done' : 'badge-pending'}">
+              ${isDone ? 'Done' : 'Pending'}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-success" onclick="markDone('${recordId}', ${index})" ${isDone ? 'disabled' : ''}>✓</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteUser('${recordId}', ${index})">🗑</button>
+          </td>
+        </tr>`;
+        table.innerHTML += row;
+      });
+    }
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const prakriti = document.getElementById('prakriti').value;
+      const followup = document.getElementById('followup').value;
+
+      if (name && prakriti && followup) {
+        try {
+          const response = await fetch('/api/prakriti/records', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              studentName: name,
+              prakritiType: prakriti,
+              followUpDate: followup
+            })
+          });
+
+          if (response.ok) {
+            alert('✅ Student record added successfully!');
+            form.reset();
+            loadRecords(); // Reload from database
+          } else {
+            const error = await response.json();
+            alert('❌ Failed to add record: ' + error.message);
+          }
+        } catch (error) {
+          console.error('Error adding record:', error);
+          alert('❌ Error: ' + error.message);
+        }
+      }
+    });
+
+    async function markDone(recordId, index) {
+      if (!recordId) {
+        // Fallback for localStorage records
+        users[index].done = true;
+        localStorage.setItem('adminUsers', JSON.stringify(users));
+        renderTable();
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/prakriti/records/${recordId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: 'Done' })
+        });
+
+        if (response.ok) {
+          loadRecords(); // Reload from database
+        } else {
+          alert('❌ Failed to update status');
+        }
+      } catch (error) {
+        console.error('Error updating record:', error);
+        alert('❌ Error: ' + error.message);
+      }
+    }
+
+    async function deleteUser(recordId, index) {
+      if (!confirm("Are you sure you want to delete this entry?")) {
+        return;
+      }
+
+      if (!recordId) {
+        // Fallback for localStorage records
+        users.splice(index, 1);
+        localStorage.setItem('adminUsers', JSON.stringify(users));
+        renderTable();
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/prakriti/records/${recordId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          alert('✅ Record deleted successfully!');
+          loadRecords(); // Reload from database
+        } else {
+          alert('❌ Failed to delete record');
+        }
+      } catch (error) {
+        console.error('Error deleting record:', error);
+        alert('❌ Error: ' + error.message);
+      }
+    }
+
+    // Load records when page loads
+    loadRecords();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  // Initialize Flatpickr
+  flatpickr("#followup", {
+    dateFormat: "Y-m-d",
+    minDate: "today"
+  });
+</script>
+  <script src="js/jquery8a54.js?ver=1.0.0"></script>
+  <script src="js/plugins8a54.js?ver=1.0.0"></script>
+  <script src="js/init8a54.js?ver=1.0.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Authentication Protection -->
+  <script>
+    // Check if user is logged in
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      alert('⚠️ Admin access requires authentication. Please sign in first.');
+      window.location.href = 'sign-in.html';
+    }
+    
+    // Add logout button functionality
+    const logoutBtn = document.createElement('button');
+    logoutBtn.className = 'btn btn-outline-danger btn-sm position-absolute top-0 end-0 m-3';
+    logoutBtn.innerHTML = '🚪 Logout';
+    logoutBtn.onclick = function() {
+      if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userEmail');
+        window.location.href = 'sign-in.html';
+      }
+    };
+    document.body.appendChild(logoutBtn);
+    
+    // Add back to dashboard button
+    const dashboardBtn = document.createElement('button');
+    dashboardBtn.className = 'btn btn-outline-primary btn-sm position-absolute top-0 start-0 m-3';
+    dashboardBtn.innerHTML = '🏠 Dashboard';
+    dashboardBtn.onclick = function() {
+      window.location.href = 'user-login.html';
+    };
+    document.body.appendChild(dashboardBtn);
+  </script>
+</body>
+</html>
