@@ -1,35 +1,94 @@
-# AyurvediCure 🌿🧑‍⚕️🤖
+# PrakritiInsight 🌿
 
-![AyurvediCure](img/desktop.png)
+A friendly, open-source toolkit for simple Prakriti (Ayurvedic constitution) analysis and basic Ayurvedic guidance.
 
-Welcome to **AyurvediCure**, your personalized AI-ML based Ayurvedic doctor. Our platform offers a seamless and secure experience to help you manage your health with the wisdom of Ayurveda, using the latest advancements in artificial intelligence and machine learning.
+![PrakritiInsight](frontend/img/desktop.png)
 
-## Project Overview 🌟
+Hello — this README was written to help you get PrakritiInsight running quickly. I tried to keep instructions short and practical so you can clone, install, and launch the app on Windows without hunting for missing steps.
 
-AyurvediCure provides users with two options for consultations:
+PrakritiInsight is a small web project containing a static frontend, a Node.js/Express backend with simple authentication and data storage, and an optional Python demo that shows how a lightweight ML model could be experimented with locally.
 
-1. **Talk to AI Doctor 🤖**: Get instant advice and recommendations from our AI-powered Ayurvedic doctor.
-2. **Talk to Human Doctor 🧑‍⚕️**: Connect with a real Ayurvedic doctor for personalized consultations.
+This repository contains both the frontend (static HTML/CSS/JS) and a Node.js backend (Express + Mongoose). A small Python `app.py` that demonstrates a TensorFlow-based classifier is also included — see the Notes below.
 
-### Features 🌿
+## Quick links
 
-- **Personalized and Private Conversations**: All your interactions are secure and tailored to your needs.
-- **Flexibility**: Switch seamlessly between AI and human doctors during your consultation.
-- **Medical Records Safety**: Your medical records are stored securely and can be accessed anytime.
-- **Locate Nearby Ayurvedic Doctors**: Find and connect with Ayurvedic doctors near you.
+- Frontend: `frontend/`
+- Backend (Node/Express): `server.js` (root) and `backend/server.js`
+- API routes: `routes/` and `backend/routes/`
+- Python demo model: `app.py` (root) and `backend/app.py`
 
-## Getting Started 🚀
+## How to download
 
-To start using AyurvediCure, follow these steps:
+Open a Windows command prompt (cmd) and run:
 
-1. **Register**: Sign up on our platform to create your account.
-2. **Dashboard**: Once registered, access your personalized dashboard.
-3. **Choose Your Doctor**: Select between talking to our AI doctor or a human doctor.
-4. **Switch Flexibly**: Switch between AI and human doctors as needed during your consultation.
-5. **Locate Doctors**: Use our tool to find nearby Ayurvedic doctors.
+```cmd
+git clone https://github.com/Sapna190/PrakritiInsight.git
+cd "PrakritiInsight"
+```
+
+## Run the full app (recommended)
+
+Prerequisites:
+- Node.js (v16+ or v18+ recommended)
+- npm
+- A running MongoDB instance (local or hosted) if you want to use the API features that persist data.
+
+Steps (from repository root):
+
+```cmd
+REM Install dependencies for the root project
+npm install
+
+REM Start the root server (this serves the frontend and routes)
+npm start
+
+REM The app listens on PORT (default 5000). Visit http://localhost:5000
+```
+
+If you'd rather run the backend inside `backend/` specifically (alternate):
+
+```cmd
+cd backend
+npm install
+npm start
+```
+
+The `server.js` files are configured to serve the `frontend/` directory as static assets.
+
+## Running the Python demo (optional)
+
+The repository includes an optional TensorFlow-based demo in `app.py` (root) and a copy under `backend/app.py`. This is heavy (TensorFlow) and optional.
+
+To run it:
+
+```cmd
+REM Create and activate a virtual environment (Windows cmd)
+python -m venv venv
+venv\Scripts\activate
+
+REM Install minimal packages - adapt to your environment
+pip install pandas numpy flask tensorflow
+
+python app.py
+
+REM The demo Flask app will run on its default port (usually 5000). Do not run both Node and the Python Flask app on the same port at once.
+```
+
+Notes: TensorFlow can be large and may not install on all platforms without extra steps. Use this only for experimentation.
+
+## Environment variables
+
+Create a `.env` file (root and/or `backend/.env`) with the following recommended keys:
+
+```
+MONGODB_URI=mongodb://localhost:27017/prakriti_db
+JWT_SECRET=your_jwt_secret_here
+PORT=5000
+```
+
+Adjust `MONGODB_URI` for your MongoDB deployment (Atlas, Docker, or local). If no `MONGODB_URI` is provided the code falls back to a default local connection.
 
 
 
----
 
-Thank you for choosing AyurvediCure for your Ayurvedic health needs! 🌿✨
+
